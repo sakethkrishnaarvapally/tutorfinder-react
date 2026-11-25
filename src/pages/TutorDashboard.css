@@ -769,3 +769,148 @@
     color: #111827;
     margin: 8px 0 4px;
 }
+
+/* =====================================
+   STUDENT REQUESTS - TUTOR DASHBOARD
+===================================== */
+
+/* Request card */
+.td-request {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 16px;
+  margin-bottom: 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  background: #ffffff;
+  flex-wrap: wrap;
+}
+
+/* Student avatar */
+.td-avatar {
+  width: 58px;
+  height: 58px;
+  min-width: 58px;
+  border-radius: 50%;
+  background: #eff6ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 27px;
+}
+
+/* Student information */
+.td-request-info {
+  flex: 1;
+  min-width: 150px;
+}
+
+.td-request-info h3 {
+  margin: 0 0 5px;
+  color: #1e293b;
+  font-size: 16px;
+}
+
+.td-request-info p {
+  margin: 4px 0;
+  color: #64748b;
+}
+
+.td-request-info small {
+  color: #94a3b8;
+}
+
+/* Request status */
+.td-status {
+  padding: 7px 14px;
+  border-radius: 7px;
+  background: #fff0c2;
+  color: #9a5700;
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.td-status-accepted {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.td-status-rejected {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+/* Accept and Reject buttons */
+.td-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.td-accept,
+.td-reject {
+  border: none;
+  padding: 9px 17px;
+  border-radius: 7px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.td-accept {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.td-reject {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.td-accept:hover {
+  background: #bbf7d0;
+}
+
+.td-reject:hover {
+  background: #fecaca;
+}
+
+/* Empty requests */
+.td-empty {
+  text-align: center;
+  padding: 35px 15px;
+}
+
+.td-empty div {
+  font-size: 42px;
+  margin-bottom: 10px;
+}
+
+.td-empty h3 {
+  color: #1e293b;
+}
+
+.td-empty p {
+  color: #64748b;
+}
+
+/* Mobile responsive */
+@media (max-width: 600px) {
+  .td-request {
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .td-status {
+    margin-left: 0;
+  }
+
+  .td-buttons {
+    width: 100%;
+  }
+
+  .td-buttons button {
+    flex: 1;
+  }
+}

@@ -3,15 +3,26 @@ import { read, write } from "./storage.js";
 
 const REQUESTS_KEY = "requests";
 
+// Notify dashboards in the same tab
+const notifyRequestsChanged = () => {
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new Event("requestsUpdated"));
+  }
+};
+
+// Get all requests
 export const getRequests = () => {
   const data = read(REQUESTS_KEY, []);
   return Array.isArray(data) ? data : [];
 };
 
-export const saveRequests = (requests) =>
+// Save requests
+export const saveRequests = (requests) => {
   write(REQUESTS_KEY, requests);
+  notifyRequestsChanged();
+};
 
-// Create a student-to-tutor request
+// Create student-to-tutor request
 export const addRequest = ({
   studentId,
   studentName,
@@ -65,35 +76,50 @@ export const addRequest = ({
 };
 
 // Student dashboard compatibility
-export const sendTutorRequest = (data, user) =>
-  addRequest({
-    studentId: user?.id ?? data.studentId,
+export const sendTutorRequest = (data, user) => {
+  return addRequest({
+    studentId: user?.id ?? user?._id ?? data.studentId,
     studentName: user?.name ?? data.studentName,
-    tutorId: data.id ?? data.tutorId,
+    tutorId: data.id ?? data._id ?? data.tutorId,
     tutorName: data.name ?? data.tutorName,
     subject: data.subject,
     message: data.message || "",
   });
+};
 
 // Update request status
 export const updateRequestStatus = (id, status) => {
-  saveRequests(
-    getRequests().map((r) =>
-      r.id === id ? { ...r, status } : r
-    )
+  const validStatuses = ["pending", "accepted", "rejected"];
+
+  if (!validStatuses.includes(status)) {
+    return false;
+  }
+
+  const requests = getRequests();
+
+  const updatedRequests = requests.map((r) =>
+    String(r.id) === String(id)
+      ? { ...r, status }
+      : r
   );
+
+  saveRequests(updatedRequests);
+  return true;
 };
 
+// Get requests for student
 export const getRequestsForStudent = (studentId) =>
   getRequests().filter(
     (r) => String(r.studentId) === String(studentId)
   );
 
+// Get requests for tutor
 export const getRequestsForTutor = (tutorId) =>
   getRequests().filter(
     (r) => String(r.tutorId) === String(tutorId)
   );
 
+// Check pending request
 export const hasPendingRequest = (studentId, tutorId) =>
   getRequests().some(
     (r) =>
@@ -102,5 +128,11 @@ export const hasPendingRequest = (studentId, tutorId) =>
       r.status === "pending"
   );
 
-export const deleteRequest = (id) =>
-  saveRequests(getRequests().filter((r) => r.id !== id));
+// Delete request
+export const deleteRequest = (id) => {
+  saveRequests(
+    getRequests().filter(
+      (r) => String(r.id) !== String(id)
+    )
+  );
+};

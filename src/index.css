@@ -356,3 +356,34 @@ footer{background:#111827;color:white;padding:55px 7% 20px}
   .admin-actions-grid{grid-template-columns:1fr}
   .admin-footer{flex-direction:column;gap:10px;text-align:center}
 }
+/* Student request status badges */
+
+.request-pending {
+  background: #fff0c2;
+  color: #9a5700;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+.request-accepted {
+  background: #d8f8e5;
+  color: #087b3e;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+.request-rejected {
+  background: #ffe0e0;
+  color: #c62828;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+.my-requests-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px;
+}
