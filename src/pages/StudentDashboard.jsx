@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
@@ -84,12 +83,14 @@ export default function StudentDashboard() {
     loadRequests();
 
     window.addEventListener("focus", loadTutors);
+    window.addEventListener("usersUpdated", loadTutors);
     window.addEventListener("storage", loadTutors);
     window.addEventListener("storage", loadRequests);
     window.addEventListener("requestsUpdated", loadRequests);
 
     return () => {
       window.removeEventListener("focus", loadTutors);
+      window.removeEventListener("usersUpdated", loadTutors);
       window.removeEventListener("storage", loadTutors);
       window.removeEventListener("storage", loadRequests);
       window.removeEventListener("requestsUpdated", loadRequests);

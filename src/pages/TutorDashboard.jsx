@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
@@ -21,12 +20,100 @@ const students = [
 ];
 
 export default function TutorDashboard() {
-  const { user, logout } = useAuth();
+  const { user, logout, updateProfile } = useAuth();
   const navigate = useNavigate();
 
   const tutorId = user?.id ?? user?._id;
 
   const [requests, setRequests] = useState([]);
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [profileMessage, setProfileMessage] = useState("");
+  const [profileError, setProfileError] = useState("");
+  const [profileForm, setProfileForm] = useState(() => ({
+    name: user?.name || "",
+    phone: user?.phone || "",
+    subject: user?.subject || "",
+    qualification: user?.qualification || "",
+    experience: user?.experience || "",
+    location: user?.location || "",
+    fee: user?.fee ?? "",
+    availability: user?.availability || "",
+    bio: user?.bio || "",
+  }));
+
+  useEffect(() => {
+    setProfileForm({
+      name: user?.name || "",
+      phone: user?.phone || "",
+      subject: user?.subject || "",
+      qualification: user?.qualification || "",
+      experience: user?.experience || "",
+      location: user?.location || "",
+      fee: user?.fee ?? "",
+      availability: user?.availability || "",
+      bio: user?.bio || "",
+    });
+  }, [user]);
+
+  function handleProfileInput(event) {
+    const { name, value } = event.target;
+    setProfileForm((current) => ({ ...current, [name]: value }));
+  }
+
+  function openProfileEditor() {
+    setProfileMessage("");
+    setProfileError("");
+    setProfileForm({
+      name: user?.name || "",
+      phone: user?.phone || "",
+      subject: user?.subject || "",
+      qualification: user?.qualification || "",
+      experience: user?.experience || "",
+      location: user?.location || "",
+      fee: user?.fee ?? "",
+      availability: user?.availability || "",
+      bio: user?.bio || "",
+    });
+    setIsEditingProfile(true);
+  }
+
+  function handleProfileSave(event) {
+    event.preventDefault();
+    setProfileMessage("");
+    setProfileError("");
+
+    const required = ["name", "subject", "qualification", "experience", "location", "availability"];
+    if (required.some((field) => !String(profileForm[field] || "").trim())) {
+      setProfileError("Please complete all required profile fields.");
+      return;
+    }
+
+    const fee = Number(profileForm.fee);
+    if (!Number.isFinite(fee) || fee <= 0) {
+      setProfileError("Please enter a valid hourly fee greater than zero.");
+      return;
+    }
+
+    const result = updateProfile({
+      ...profileForm,
+      name: profileForm.name.trim(),
+      phone: profileForm.phone.trim(),
+      subject: profileForm.subject.trim(),
+      qualification: profileForm.qualification.trim(),
+      experience: profileForm.experience.trim(),
+      location: profileForm.location.trim(),
+      fee,
+      bio: profileForm.bio.trim(),
+    });
+
+    if (!result.ok) {
+      setProfileError(result.error || "Profile update failed.");
+      return;
+    }
+
+    setIsEditingProfile(false);
+    setProfileMessage("Your profile has been updated successfully.");
+  }
 
   // Load requests belonging to this tutor
   const loadRequests = useCallback(() => {
@@ -317,52 +404,120 @@ export default function TutorDashboard() {
 
             <button
               className="td-action"
-              onClick={() =>
-                alert("Profile editing feature opened.")
-              }
+              type="button"
+              onClick={openProfileEditor}
             >
               ✏️ Edit Profile
             </button>
 
           </div>
 
+          {profileMessage && (
+            <div className="td-profile-alert td-profile-success" role="status">
+              {profileMessage}
+            </div>
+          )}
+
           <div className="td-profile">
 
-            <div className="td-profile-avatar">
-              👨‍🏫
-            </div>
+            <div className="td-profile-avatar">👨‍🏫</div>
 
-            <div>
-
-              <h3>{user?.name}</h3>
-
-              <p>
-                📚 <b>Subject:</b> Mathematics
-              </p>
-
-              <p>
-                🎓 <b>Qualification:</b> M.Sc Mathematics
-              </p>
-
-              <p>
-                💼 <b>Experience:</b> 5 Years
-              </p>
-
-              <p>
-                📍 <b>Location:</b> Hyderabad
-              </p>
-
+            <div className="td-profile-details">
+              <h3>{user?.name || "Tutor"}</h3>
+              <p>📚 <b>Subject:</b> {user?.subject || "Not added"}</p>
+              <p>🎓 <b>Qualification:</b> {user?.qualification || "Not added"}</p>
+              <p>💼 <b>Experience:</b> {user?.experience || "Not added"}</p>
+              <p>📍 <b>Location:</b> {user?.location || "Not added"}</p>
+              <p>🕐 <b>Availability:</b> {user?.availability || "Not added"}</p>
+              {user?.phone && <p>📞 <b>Phone:</b> {user.phone}</p>}
+              {user?.bio && <p className="td-profile-bio">{user.bio}</p>}
             </div>
 
             <div className="td-fee">
-
               <span>Hourly Fee</span>
-              <strong>₹500</strong>
+              <strong>₹{user?.fee ?? 0}</strong>
               <small>per hour</small>
-
             </div>
 
           </div>
+
+          {isEditingProfile && (
+            <form className="td-edit-form" onSubmit={handleProfileSave}>
+              <div className="td-edit-heading">
+                <div>
+                  <small>UPDATE YOUR DETAILS</small>
+                  <h3>Edit Tutor Profile</h3>
+                </div>
+                <button type="button" className="td-edit-close" onClick={() => setIsEditingProfile(false)} aria-label="Close edit form">×</button>
+              </div>
+
+              {profileError && <div className="td-profile-alert td-profile-error" role="alert">{profileError}</div>}
+
+              <div className="td-edit-grid">
+                <label className="td-edit-field">
+                  <span>Full Name *</span>
+                  <input name="name" value={profileForm.name} onChange={handleProfileInput} required />
+                </label>
+
+                <label className="td-edit-field">
+                  <span>Email Address</span>
+                  <input value={user?.email || ""} disabled />
+                  <small>Email is your login ID and cannot be changed here.</small>
+                </label>
+
+                <label className="td-edit-field">
+                  <span>Phone Number</span>
+                  <input name="phone" type="tel" value={profileForm.phone} onChange={handleProfileInput} placeholder="Enter phone number" />
+                </label>
+
+                <label className="td-edit-field">
+                  <span>Teaching Subject *</span>
+                  <input name="subject" value={profileForm.subject} onChange={handleProfileInput} required />
+                </label>
+
+                <label className="td-edit-field">
+                  <span>Qualification *</span>
+                  <input name="qualification" value={profileForm.qualification} onChange={handleProfileInput} placeholder="e.g. M.Sc Mathematics" required />
+                </label>
+
+                <label className="td-edit-field">
+                  <span>Teaching Experience *</span>
+                  <input name="experience" value={profileForm.experience} onChange={handleProfileInput} placeholder="e.g. 5 Years" required />
+                </label>
+
+                <label className="td-edit-field">
+                  <span>Location *</span>
+                  <input name="location" value={profileForm.location} onChange={handleProfileInput} required />
+                </label>
+
+                <label className="td-edit-field">
+                  <span>Hourly Fee (₹) *</span>
+                  <input name="fee" type="number" min="1" step="1" value={profileForm.fee} onChange={handleProfileInput} required />
+                </label>
+
+                <label className="td-edit-field">
+                  <span>Availability *</span>
+                  <select name="availability" value={profileForm.availability} onChange={handleProfileInput} required>
+                    <option value="">Select availability</option>
+                    <option value="Morning">Morning</option>
+                    <option value="Afternoon">Afternoon</option>
+                    <option value="Evening">Evening</option>
+                    <option value="Weekend">Weekend</option>
+                  </select>
+                </label>
+
+                <label className="td-edit-field td-edit-full">
+                  <span>About Me</span>
+                  <textarea name="bio" rows="4" value={profileForm.bio} onChange={handleProfileInput} placeholder="Describe your teaching experience and approach..." />
+                </label>
+              </div>
+
+              <div className="td-edit-actions">
+                <button type="submit" className="td-save-profile">Save Changes</button>
+                <button type="button" className="td-cancel-profile" onClick={() => setIsEditingProfile(false)}>Cancel</button>
+              </div>
+            </form>
+          )}
 
         </section>
 

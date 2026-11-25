@@ -1,7 +1,8 @@
 import { Link, useParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
 import useBodyClass from "../hooks/useBodyClass.js";
-import { read } from "../utils/storage.js";
+import { getUsers } from "../utils/storage.js";
+import { useEffect, useState } from "react";
 import { sendTutorRequest } from "../utils/requests.js";
 import StudentNavbar from "../components/StudentNavbar.jsx";
 import StudentFooter from "../components/StudentFooter.jsx";
@@ -12,7 +13,30 @@ export default function TutorProfile() {
   const { id } = useParams();
   const { user } = useAuth();
 
-  const tutor = read("tutors", []).find((t) => String(t.id) === id);
+  const [tutor, setTutor] = useState(() =>
+    getUsers().find((item) =>
+      String(item.id ?? item._id) === id &&
+      item.role?.toLowerCase() === "tutor"
+    ) || null
+  );
+
+  useEffect(() => {
+    const loadTutor = () => {
+      const current = getUsers().find((item) =>
+        String(item.id ?? item._id) === id &&
+        item.role?.toLowerCase() === "tutor"
+      ) || null;
+      setTutor(current);
+    };
+
+    loadTutor();
+    window.addEventListener("usersUpdated", loadTutor);
+    window.addEventListener("storage", loadTutor);
+    return () => {
+      window.removeEventListener("usersUpdated", loadTutor);
+      window.removeEventListener("storage", loadTutor);
+    };
+  }, [id]);
 
   return (
     <>
@@ -53,6 +77,12 @@ export default function TutorProfile() {
               <p>
                 <strong>🕐 Availability:</strong> {tutor.availability}
               </p>
+              {tutor.phone && (
+                <p><strong>📞 Phone:</strong> {tutor.phone}</p>
+              )}
+              {tutor.bio && (
+                <p><strong>About:</strong> {tutor.bio}</p>
+              )}
 
               <div className="tp-fee">
                 ₹{tutor.fee} <small>per hour</small>

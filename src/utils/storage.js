@@ -1,4 +1,3 @@
-
 const USERS_KEY = "users";
 const SESSION_KEY = "currentUser";
 
@@ -106,11 +105,22 @@ export const findUser = (email, password) =>
 // Update user
 export const updateUser = (id, changes) => {
   const users = getUsers().map((u) =>
-    u.id === id ? { ...u, ...changes } : u
+    String(u.id ?? u._id) === String(id)
+      ? { ...u, ...changes, id: u.id ?? u._id }
+      : u
   );
 
   saveUsers(users);
-  return users.find((u) => u.id === id) || null;
+  const updated = users.find(
+    (u) => String(u.id ?? u._id) === String(id)
+  ) || null;
+
+  // Notify other components in this tab to reload registered tutor data.
+  if (updated) {
+    window.dispatchEvent(new CustomEvent("usersUpdated"));
+  }
+
+  return updated;
 };
 
 // Delete user
